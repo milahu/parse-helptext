@@ -1,0 +1,181 @@
+refalac 1.82
+Usage: refalac [options] infiles....
+
+"-" as infile means stdin.
+
+Main options:
+--fast                 Fast stereo encoding mode.
+-d <dirname>           Output directory. Default is current working dir.
+--check                Show library versions and exit.
+-A, --alac             ALAC encoding mode
+-D, --decode           Decode to a WAV file.
+--caf                  Output to CAF file instead of M4A/WAV/AAC.
+--play                 Decode to a WaveOut device (playback).
+-r, --rate <keep|auto|n>
+                       keep: output sampling rate will be same as input
+                             if possible.
+                       auto: output sampling rate will be automatically
+                             chosen by encoder.
+                       n: desired output sampling rate in Hz.
+--lowpass <number>     Specify lowpass filter cut-off frequency in Hz.
+                       Use this when you want lower cut-off than
+                       Apple default.
+-b, --bits-per-sample <n>
+                       Bits per sample of output (for WAV/ALAC only)
+--no-dither            Turn off dither when quantizing to lower bit depth.
+--peak                 Scan + print peak (don't generate output file).
+                       Cannot be used with encoding mode or -D.
+                       When DSP options are set, peak is computed 
+                       after all DSP filters have been applied.
+--gain <f>             Adjust gain by f dB.
+                       Use negative value to decrese gain, when you want to
+                       avoid clipping introduced by DSP.
+-N, --normalize        Normalize (works in two pass. can generate HUGE
+                       tempfile for large piped input)
+--drc <thresh:ratio:knee:attack:release>
+                       Dynamic range compression.
+                       Loud parts over threshold are attenuated by ratio.
+                         thresh:  threshold (in dBFS, < 0.0)
+                         ratio:   compression ratio (> 1.0)
+                         knee:    knee width (in dB, >= 0.0)
+                         attack:  attack time (in millis, >= 0.0)
+                         release: release time (in millis, >= 0.0)
+--limiter              Apply smart limiter that softly clips portions
+                       where peak exceeds (near) 0dBFS
+--start <[[hh:]mm:]ss[.ss..]|<n>s|<mm:ss:ff>f>
+                       Specify start point of the input.
+                       You specify either in seconds(hh:mm:ss.sss..form) or
+                       number of samples followed by 's' or
+                       cuesheet frames(mm:ss:ff form) followed by 'f'.
+                       When negative value is given, instead of trimming,
+                       specified amount of silence is prepended.
+                       Example:
+                         --start 4010160s : start at 4010160 samples
+                         --start 1:30:70f : same as above, in cuepoint
+                         --start 1:30.93333 : same as above
+--end <[[hh:]mm:]ss[.ss..]|<n>s|<mm:ss:ff>f>
+                       Specify end point of the input (exclusive).
+--delay <[[hh:]mm:]ss[.ss..]|<n>s|<mm:ss:ff>f>
+                       Same as --start, with the sign reversed.
+                       Positive value will prepend silence.
+                       (This option exists due to historical reason)
+--no-delay             Compensate encoder delay by prepending 960 samples 
+                       of silence, then trimming 3 AAC frames from 
+                       the beginning (and also tweak iTunSMPB).
+                       This option is mainly intended for resolving
+                       A/V sync issue of video. 
+--num-priming <n>      (Experimental). Set arbitrary number of priming
+                       samples in range from 0 to 2112 (default 2112).
+                       Applicable only for AAC LC.
+                       --num-priming=0 is the same as --no-delay.
+                       Doesn't work with --no-smart-padding.
+--gapless-mode <n>     Encoder delay signaling for gapless playback.
+                         0: iTunSMPB (default)
+                         1: ISO standard (elst + sbgp + sgpd)
+                         2: Both
+--matrix-preset <name> Specify user defined preset for matrix mixer.
+--matrix-file <file>   Matrix file for remix.
+--no-matrix-normalize  Don't automatically normalize(scale) matrix
+                       coefficients for the matrix mixer.
+--chanmap <n1,n2...>   Rearrange input channels to the specified order.
+                       Example:
+                         --chanmap 2,1 -> swap L and R.
+                         --chanmap 2,3,1 -> C+L+R -> L+R+C.
+--chanmask <n>         Force input channel mask(bitmap).
+                       Either decimal or hex number with 0x prefix
+                       can be used.
+                       When 0 is given, qaac works as if no channel mask is
+                       present in the source and picks default layout.
+--no-optimize          Don't optimize MP4 container after encoding.
+--tmpdir <dirname>     Specify temporary directory. Default is %TMP%
+-s, --silent           Suppress console messages.
+--verbose              More verbose console messages.
+-i, --ignorelength     Assume WAV input and ignore the data chunk length.
+--threading            Enable multi-threading.
+-n, --nice             Give lower process priority.
+--sort-args            Sort filenames given by command line arguments.
+--text-codepage <n>    Specify text code page of cuesheet/chapter/lyrics.
+                       Example: 1252 for Latin-1, 65001 for UTF-8.
+                       Use this when bogus values are written into tags
+                       due to automatic encoding detection failure.
+-S, --stat             Save bitrate statistics into file.
+--log <filename>       Output message to file.
+
+Option for output filename generation:
+--fname-from-tag       Generate filename based on metadata of input.
+                       By default, output filename will be the same as input
+                       (only different by the file extension).
+                       Name generation can be tweaked by --fname-format.
+--fname-format <string>   Format string for output filename.
+
+Option for single output:
+-o <filename>          Specify output filename
+--concat               Encodes whole inputs into a single file. 
+                       Requires output filename (with -o)
+
+Option for cuesheet input only:
+--cue-tracks <n[-n][,n[-n]]*>
+                       Limit extraction to specified tracks.
+                       Tracks can be specified with comma separated numbers.
+                       Hyphen can be used to denote range of numbers.
+                       Tracks non-existent in the cue are just ignored.
+                       Numbers must be in the range 0-99.
+                       Example:
+                         --cue-tracks 1-3,6-9,11
+                           -> equivalent to --cue-tracks 1,2,3,6,7,8,9,11
+                         --cue-tracks 2-99
+                           -> can be used to skip first track (and HTOA)
+
+Options for Raw PCM input only:
+-R, --raw              Raw PCM input.
+--raw-channels <n>     Number of channels, default 2.
+--raw-rate     <n>     Sample rate, default 44100.
+--raw-format   <str>   Sample format, default S16L.
+                       Sample format spec:
+                       1st char: S(igned) | U(nsigned) | F(loat)
+                       2nd part: Bitwidth
+                       Last part: L(ittle Endian) | B(ig Endian)
+                       Last part can be omitted, L is assumed by default.
+                       Cases are ignored. u16b is OK.
+
+Tagging options:
+ (same value is set to all files, so use with care for multiple files)
+--title <string>
+--artist <string>
+--band <string>       This means "Album Artist".
+--album <string>
+--grouping <string>
+--composer <string>
+--comment <string>
+--genre <string>
+--date <string>
+--track <number[/total]>
+--disk <number[/total]>
+--compilation[=0|1]
+                      By default, iTunes compilation flag is not set.
+                      --compilation or --compilation=1 sets flag on.
+                      --compilation=0 is same as default.
+--lyrics <filename>
+--artwork <filename>
+--artwork-size <n>    Specify maximum width or height of artwork in pixels.
+                      If specified artwork (with --artwork) is larger than
+                      this, artwork is automatically resized.
+--copy-artwork        Copy front cover art(APIC:type 3) from the source.
+                      When --artwork is also given, this option is ignored.
+--chapter <filename>
+                      Set chapter from file.
+--tag <fcc>:<value>
+                      Set iTunes pre-defined tag with fourcc key
+                      and value.
+                      1) When key starts with U+00A9 (copyright sign),
+                         you can use 3 chars starting from the second char
+                         instead.
+                      2) Some known tags having type other than UTF-8 string
+                         are taken care of. Others are just stored as UTF-8
+                         string.
+--tag-from-file <fcc>:<path>
+                      Same as above, but value is read from file.
+--long-tag <key>:<value>
+                      Set long tag (iTunes custom metadata) with 
+                      arbitrary key/value pair. Value is always stored as
+                      UTF8 string.

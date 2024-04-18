@@ -1,0 +1,397 @@
+[
+  [
+    "--formats",
+    null,
+    "Show available AAC formats and exit"
+  ],
+  [
+    "-a",
+    "--abr",
+    "<bitrate>",
+    "AAC ABR mode / bitrate"
+  ],
+  [
+    "-V",
+    "--tvbr",
+    "<n>",
+    "AAC True VBR mode / quality [0-127]"
+  ],
+  [
+    "-v",
+    "--cvbr",
+    "<bitrate>",
+    "AAC Constrained VBR mode / bitrate"
+  ],
+  [
+    "-c",
+    "--cbr",
+    "<bitrate>",
+    "AAC CBR mode / bitrate"
+  ],
+  [
+    "--he",
+    null,
+    "HE AAC mode (TVBR is not available)"
+  ],
+  [
+    "-q",
+    "--quality",
+    "<n>",
+    "AAC encoding Quality [0-2]"
+  ],
+  [
+    "--adts",
+    null,
+    "ADTS output (AAC only)"
+  ],
+  [
+    "--no-smart-padding",
+    null,
+    "Don't apply smart padding for gapless playback."
+  ],
+  [
+    "-d",
+    "<dirname>",
+    "Output directory. Default is current working dir."
+  ],
+  [
+    "--check",
+    null,
+    "Show library versions and exit."
+  ],
+  [
+    "-A",
+    "--alac",
+    null,
+    "ALAC encoding mode"
+  ],
+  [
+    "-D",
+    "--decode",
+    null,
+    "Decode to a WAV file."
+  ],
+  [
+    "--caf",
+    null,
+    "Output to CAF file instead of M4A/WAV/AAC."
+  ],
+  [
+    "--play",
+    null,
+    "Decode to a WaveOut device (playback)."
+  ],
+  [
+    "-r",
+    "--rate",
+    "<keep|auto|n>",
+    "keep: output sampling rate will be same as input"
+  ],
+  [
+    "--lowpass",
+    "<number>",
+    "Specify lowpass filter cut-off frequency in Hz."
+  ],
+  [
+    "-b",
+    "--bits-per-sample",
+    "<n>",
+    "Bits per sample of output (for WAV/ALAC only)"
+  ],
+  [
+    "--no-dither",
+    null,
+    "Turn off dither when quantizing to lower bit depth."
+  ],
+  [
+    "--peak",
+    null,
+    "Scan + print peak (don't generate output file)."
+  ],
+  [
+    "--gain",
+    "<f>",
+    "Adjust gain by f dB."
+  ],
+  [
+    "-N",
+    "--normalize",
+    null,
+    "Normalize (works in two pass. can generate HUGE"
+  ],
+  [
+    "--drc",
+    "<thresh:ratio:knee:attack:release>",
+    "Dynamic range compression."
+  ],
+  [
+    "--limiter",
+    null,
+    "Apply smart limiter that softly clips portions"
+  ],
+  [
+    "--start",
+    "<[[hh:]mm:]ss[.ss..]|<n>s|<mm:ss:ff>f>",
+    "Specify start point of the input."
+  ],
+  [
+    "--end",
+    "<[[hh:]mm:]ss[.ss..]|<n>s|<mm:ss:ff>f>",
+    "Specify end point of the input (exclusive)."
+  ],
+  [
+    "--delay",
+    "<[[hh:]mm:]ss[.ss..]|<n>s|<mm:ss:ff>f>",
+    "Same as --start, with the sign reversed."
+  ],
+  [
+    "--no-delay",
+    null,
+    "Compensate encoder delay by prepending 960 samples"
+  ],
+  [
+    "--num-priming",
+    "<n>",
+    "(Experimental). Set arbitrary number of priming"
+  ],
+  [
+    "--gapless-mode",
+    "<n>",
+    "Encoder delay signaling for gapless playback."
+  ],
+  [
+    "--matrix-preset",
+    "<name>",
+    "Specify user defined preset for matrix mixer."
+  ],
+  [
+    "--matrix-file",
+    "<file>",
+    "Matrix file for remix."
+  ],
+  [
+    "--no-matrix-normalize",
+    null,
+    "Don't automatically normalize(scale) matrix"
+  ],
+  [
+    "--chanmap",
+    "<n1,n2...>",
+    "Rearrange input channels to the specified order."
+  ],
+  [
+    "--chanmask",
+    "<n>",
+    "Force input channel mask(bitmap)."
+  ],
+  [
+    "--no-optimize",
+    null,
+    "Don't optimize MP4 container after encoding."
+  ],
+  [
+    "--tmpdir",
+    "<dirname>",
+    "Specify temporary directory. Default is %TMP%"
+  ],
+  [
+    "-s",
+    "--silent",
+    null,
+    "Suppress console messages."
+  ],
+  [
+    "--verbose",
+    null,
+    "More verbose console messages."
+  ],
+  [
+    "-i",
+    "--ignorelength",
+    null,
+    "Assume WAV input and ignore the data chunk length."
+  ],
+  [
+    "--threading",
+    null,
+    "Enable multi-threading."
+  ],
+  [
+    "-n",
+    "--nice",
+    null,
+    "Give lower process priority."
+  ],
+  [
+    "--sort-args",
+    null,
+    "Sort filenames given by command line arguments."
+  ],
+  [
+    "--text-codepage",
+    "<n>",
+    "Specify text code page of cuesheet/chapter/lyrics."
+  ],
+  [
+    "-S",
+    "--stat",
+    null,
+    "Save bitrate statistics into file."
+  ],
+  [
+    "--log",
+    "<filename>",
+    "Output message to file."
+  ],
+  [
+    "--fname-from-tag",
+    null,
+    "Generate filename based on metadata of input."
+  ],
+  [
+    "--fname-format",
+    "<string>",
+    "Format string for output filename."
+  ],
+  [
+    "-o",
+    "<filename>",
+    "Specify output filename"
+  ],
+  [
+    "--concat",
+    null,
+    "Encodes whole inputs into a single file."
+  ],
+  [
+    "--cue-tracks",
+    "<n[-n][,n[-n]]*>",
+    "Limit extraction to specified tracks."
+  ],
+  [
+    "-R",
+    "--raw",
+    null,
+    "Raw PCM input."
+  ],
+  [
+    "--raw-channels",
+    "<n>",
+    "Number of channels, default 2."
+  ],
+  [
+    "--raw-rate",
+    "<n>",
+    "Sample rate, default 44100."
+  ],
+  [
+    "--raw-format",
+    "<str>",
+    "Sample format, default S16L."
+  ],
+  [
+    "--native-resampler",
+    "[=line|norm|bats,n]",
+    "Arguments followed by '=' are optional."
+  ],
+  [
+    "--title",
+    "<string>",
+    ""
+  ],
+  [
+    "--artist",
+    "<string>",
+    ""
+  ],
+  [
+    "--band",
+    "<string>",
+    "This means \"Album Artist\"."
+  ],
+  [
+    "--album",
+    "<string>",
+    ""
+  ],
+  [
+    "--grouping",
+    "<string>",
+    ""
+  ],
+  [
+    "--composer",
+    "<string>",
+    ""
+  ],
+  [
+    "--comment",
+    "<string>",
+    ""
+  ],
+  [
+    "--genre",
+    "<string>",
+    ""
+  ],
+  [
+    "--date",
+    "<string>",
+    ""
+  ],
+  [
+    "--track",
+    "<number[/total]>",
+    ""
+  ],
+  [
+    "--disk",
+    "<number[/total]>",
+    ""
+  ],
+  [
+    "--compilation",
+    "[=0|1]",
+    "By default, iTunes compilation flag is not set."
+  ],
+  [
+    "--lyrics",
+    "<filename>",
+    ""
+  ],
+  [
+    "--artwork",
+    "<filename>",
+    ""
+  ],
+  [
+    "--artwork-size",
+    "<n>",
+    "Specify maximum width or height of artwork in pixels."
+  ],
+  [
+    "--copy-artwork",
+    null,
+    "Copy front cover art(APIC:type 3) from the source."
+  ],
+  [
+    "--chapter",
+    "<filename>",
+    "Set chapter from file."
+  ],
+  [
+    "--tag",
+    "<fcc>:<value>",
+    "Set iTunes pre-defined tag with fourcc key"
+  ],
+  [
+    "--tag-from-file",
+    "<fcc>:<path>",
+    "Same as above, but value is read from file."
+  ],
+  [
+    "--long-tag",
+    "<key>:<value>",
+    "Set long tag (iTunes custom metadata) with"
+  ]
+]

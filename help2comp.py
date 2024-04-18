@@ -13,7 +13,7 @@ from string import Template
 
 
 URL = 'http://github.com/RobSis/zsh-completion-generator'
-STRIP_CHARS = " \t\n\r,="
+STRIP_CHARS = "\t\n\r,=" # dont strip spaces here
 
 COMPLETE_FUNCTION_TEMPLATE = """
 #compdef $program_name
@@ -38,15 +38,35 @@ def cut_option(line):
     """
     Cuts out the first option (short or long) and its argument.
     """
+    line = line.strip() # strip spaces
     # TODO: dare to make it regex-free?
     newline = line.strip(STRIP_CHARS)
-    opt = re.findall(r'^(-[a-zA-Z0-9\-]+(?:[\[\ =][^\-\ ][a-zA-Z\<\>\[\|\:\]\-\_\?#]*\]?)?)', line)
+    opt = re.findall(r'^(-[a-zA-Z0-9\-]*[a-zA-Z0-9](?:(?: +|=)(?:<[^ ]+>|\[[^ ]+\])|\[=[^ ]+\])?)', line)
+    #print("opt", repr(opt))
     if len(opt) > 0:
         newline = line.replace(opt[0], "", 1).strip(STRIP_CHARS)
         # return without parameter
-        return newline, re.split('[ [=]', opt[0], 1)[0]
+        #print("opt newline", repr(newline))
+        #print("opt 0 split", repr(re.split('[ [=]', opt[0], 1)))
+        parts = re.split('(?:(\[)|=| +)', opt[0], 1) # capture [
+        parts = [p for p in parts if p != None]
+        if len(parts) > 1 and parts[1] == "[":
+            parts = [parts[0], parts[1] + parts[2]]
+        #print("parts", repr(parts))
+        if len(parts) == 1:
+            opt, var = parts[0], None
+        elif len(parts) == 2:
+            opt, var = parts
+            if var[0] not in ("<", "["):
+                # quickfix: ignore examples: --opt 123
+                return newline, None, None
+            if var[-1] not in (">", "]"):
+                raise ValueError(f"failed to parse var from line: {repr(line)}. parts: {repr(parts)}")
+        else:
+            raise ValueError(f"failed to parse line: {repr(line)}. parts: {repr(parts)}")
+        return newline, opt, var
     else:
-        return newline, None
+        return newline, None, None
 
 
 def parse_options(help_text):
@@ -59,23 +79,29 @@ def parse_options(help_text):
     previous_description_missing = False
     for line in help_text:
         line = line.strip(STRIP_CHARS)
-        if re.match(r'^--?[a-zA-Z0-9]+', line):  # starts with option
+        # " {0,5}": allow some indent before option, but not too much
+        # to ignore examples in description
+        if re.match(r'^ {0,5}--?[a-zA-Z0-9]+', line):  # starts with option
             previous_description_missing = False
             options = []
+            var = None
             while True:
-                line, opt = cut_option(line)
+                line, opt, opt_var = cut_option(line)
                 if opt is None:
                     break
-
                 options.append(opt)
+                if opt_var:
+                    var = opt_var
 
             if (len(line) == 0):
                 previous_description_missing = True
 
-            options.append(line)
+            options.append(var)
+            options.append(line.strip()) # description
             all_options.append(options)
         elif previous_description_missing:
-            all_options[-1][-1] = line
+            #print(f"replacing missing previous description {repr(all_options[-1][-1])} with {repr(line.strip())}")
+            all_options[-1][-1] = line.strip() # description
             previous_description_missing = False
 
     return all_options
@@ -132,6 +158,11 @@ if __name__ == "__main__":
         options = parse_options(sys.stdin.readlines())
         if (len(options) == 0):
             sys.exit(2)
+
+        # TODO use the new options format
+        import json
+        print(json.dumps(options, indent=2))
+        sys.exit()
 
         print(generate_completion_function(options, sys.argv[1]))
     else:
