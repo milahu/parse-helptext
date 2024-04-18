@@ -10,6 +10,7 @@
 import sys
 import re
 from string import Template
+import io
 
 
 URL = 'http://github.com/RobSis/zsh-completion-generator'
@@ -153,17 +154,149 @@ def generate_completion_function(options, program_name):
     return Template(COMPLETE_FUNCTION_TEMPLATE).safe_substitute(model).strip()
 
 
-if __name__ == "__main__":
-    if len(sys.argv) > 1:
+def loop_options(options):
+    for parts in options:
+        #print("parts", repr(parts))
+        desc = parts[-1]
+        var = parts[-2]
+        opts = [o for o in parts if o and o[0] == "-"]
+        opt_name = opts[-1].replace("-", "_")
+        yield opts, var, desc, opt_name
+
+
+def generate_argparse_bash(options):
+    # add missing help option
+    has_help = False
+    for opts, var, desc, opt_name in loop_options(options):
+        if "--help" in opts:
+            has_help = True
+            break
+    if not has_help:
+        options = [["-h", "--help", None, "Show help."]] + options
+    out = io.StringIO()
+    def w(line=""):
+        out.write(line + "\n")
+    w("#!/usr/bin/env bash")
+    w()
+    # TODO handle joined short arguments: someprogram -vvv == someprogram -v -v -v
+    w("# set default values")
+    w("positional_args=()")
+    for opts, var, desc, opt_name in loop_options(options):
+        if var == None:
+            # boolean argument
+            w(opt_name + "=false # " + desc) # set default value: false
+        else:
+            # string argument
+            w(opt_name + '=() # ' + desc) # set default value: empty array
+
+    w()
+    w("# parse args")
+    '''
+    # verbose style
+    w("for ((i=1;i<=$#;i++)); do")
+    w('  a="${!i}"')
+    w('  # echo "arg $i: ${a@}" # debug')
+    w('  case "$a" in')
+    for opts, var, desc, opt_name in loop_options(options):
+        w("    " + "|".join(opts) + ")")
+        if var == None:
+            # boolean argument
+            w("      " + opt_name + "=true") # set value
+        else:
+            # string argument
+            w("      : $((i++))")
+            w("      " + opt_name + '+=("${!i}")') # set value
+        w("      continue")
+        w("    ;;")
+    w("    *)")
+    w('      positional_args+=("$a")')
+    w("    ;;")
+    w("  esac")
+    w("done")
+    '''
+    # compact style
+    #w('  # echo "arg $i: ${a@}" # debug')
+    w('for ((i=1;i<=$#;i++)); do a="${!i}"; case "$a" in')
+    for opts, var, desc, opt_name in loop_options(options):
+        out.write("  " + "|".join(opts) + ") ")
+        if var == None:
+            # boolean argument
+            out.write(opt_name + "=true; ") # set value
+        else:
+            # string argument
+            out.write(": $((i++)); ")
+            out.write(opt_name + '+=("${!i}"); ') # set value
+        out.write("continue;;\n")
+    # default case
+    w('  *) positional_args+=("$a");;')
+    w("esac; done")
+
+    w()
+    w("# print parsed values")
+    w("if true; then")
+    opt_name = "positional_args"
+    '''
+    # verbose style
+    w('  for i in "${!' + opt_name + '[@]}"; do')
+    w('    v="${' + opt_name + '[$i]}"')
+    w('    echo "' + opt_name + ' $i: ${v@Q}"')
+    w('  done')
+    for opts, var, desc, opt_name in loop_options(options):
+        if var == None:
+            # boolean argument
+            w('  echo "' + opt_name + ': $' + opt_name + '"')
+        else:
+            # string argument
+            w('  for i in "${!' + opt_name + '[@]}"; do')
+            w('    v="${' + opt_name + '[$i]}"')
+            w('    echo "' + opt_name + ' $i: ${v@Q}"')
+            w('  done')
+    '''
+    # compact style
+    out.write('  for i in "${!' + opt_name + '[@]}"; do ')
+    out.write('v="${' + opt_name + '[$i]}"; ')
+    out.write('echo "' + opt_name + ' $i: ${v@Q}"; ')
+    out.write('done\n')
+    for opts, var, desc, opt_name in loop_options(options):
+        if var == None:
+            # boolean argument
+            w('  echo "' + opt_name + ': $' + opt_name + '"')
+        else:
+            # string argument
+            out.write('  for i in "${!' + opt_name + '[@]}"; do ')
+            out.write('v="${' + opt_name + '[$i]}"; ')
+            out.write('echo "' + opt_name + ' $i: ${v@Q}"; ')
+            out.write('done\n')
+    w("fi")
+    return out.getvalue()
+
+
+def main(argv):
+    #if len(argv) > 1:
+    if True:
         options = parse_options(sys.stdin.readlines())
         if (len(options) == 0):
+            print("error: failed to parse the help text from stdin")
             sys.exit(2)
 
-        # TODO use the new options format
+    if "--gen-argparse-sh" in argv:
+        # generate argument parser in bash
+        # see also https://github.com/matejak/argbash
+        print(generate_argparse_bash(options))
+        return
+
+    if True or "--json" in argv:
         import json
         print(json.dumps(options, indent=2))
         sys.exit()
 
-        print(generate_completion_function(options, sys.argv[1]))
-    else:
-        print("Please specify program name.")
+    if True:
+        program_name = "some-program"
+        if len(argv) > 1:
+            program_name = argv[1]
+        # FIXME make generate_completion_function work with the new options format
+        print(generate_completion_function(options, program_name))
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv))
