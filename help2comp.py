@@ -13,7 +13,7 @@ from string import Template
 
 
 URL = 'http://github.com/RobSis/zsh-completion-generator'
-STRIP_CHARS = " \t\n,="
+STRIP_CHARS = " \t\n\r,="
 
 COMPLETE_FUNCTION_TEMPLATE = """
 #compdef $program_name
