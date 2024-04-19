@@ -164,7 +164,30 @@ def loop_options(options):
         yield opts, var, desc, opt_name
 
 
-def generate_argparse_bash(options):
+# TODO rename "bool" to "void"
+
+def generate_argparse_bash(options, args):
+
+    short_opt_chars = ""
+    short_bool_opt_chars = ""
+    short_string_opt_chars = ""
+    for opts, var, desc, opt_name in loop_options(options):
+        for opt in opts:
+            if opt.startswith("--"):
+                continue
+            assert opt.startswith("-"), f"invalid option {repr(opt)}"
+            assert len(opt) == 2, f"invalid option {repr(opt)}"
+            opt_char = opt[1]
+            short_opt_chars += opt_char
+            if var == None:
+                short_bool_opt_chars += opt_char
+            else:
+                short_string_opt_chars += opt_char
+
+    use_opts = lambda opts: True
+    if args.filter:
+        opts_filter_set = set(re.findall("[a-zA-Z0-9_-]+", args.filter))
+        use_opts = lambda opts: next((o for o in opts if o in opts_filter_set), None) != None
 
     # add missing help option
     has_help = False
@@ -181,8 +204,11 @@ def generate_argparse_bash(options):
     w()
     # TODO handle joined short arguments: someprogram -vvv == someprogram -v -v -v
     w("# set default values")
-    w("positional_args=()")
+    w("__=() # positional args")
     for opts, var, desc, opt_name in loop_options(options):
+        if not use_opts(opts):
+            # dont set default values for unused opts
+            continue
         comment = f" # {desc}" if desc else ""
         if var == None:
             # boolean argument
@@ -211,6 +237,9 @@ def generate_argparse_bash(options):
     out.write('case "$a" in')
     w()
     for opts, var, desc, opt_name in loop_options(options):
+        if not use_opts(opts):
+            # dont set values for unused opts
+            continue
         out.write("  " + "|".join(opts) + ") ")
         if var == None:
             # boolean argument
@@ -224,15 +253,52 @@ def generate_argparse_bash(options):
         out.write("continue;;")
         w()
 
+    if args.filter:
+        # parse unused opts
+        unused_bool_opts = []
+        unused_string_opts = []
+        for opts, var, desc, opt_name in loop_options(options):
+            if use_opts(opts):
+                continue
+            if var == None:
+                unused_bool_opts += opts
+            else:
+                unused_string_opts += opts
+        w("  # skip unused args")
+        if unused_bool_opts:
+            opts = unused_bool_opts
+            w("  " + "|".join(opts) + ") :;;")
+        if unused_string_opts:
+            opts = unused_string_opts
+            w("  " + "|".join(opts) + ') s=("${s[@]:1}");;')
+
     # unshift args: expand concatenated short options
     # example: -vvv -> -v -v -v
-    out.write('  ')
-    out.write('-[^-]*) ')
-    out.write('p=(); ') # pre_stack
+    w('  -[^-]*)')
+    w('    p=()') # pre_stack
+    out.write('    ')
     out.write('for ((i=1;i<${#a};i++)); do ')
     # arg2="${a:$i:1}"; echo "unshifting ${arg2@Q}"
-    out.write('p+=("-${a:$i:1}"); ')
-    out.write('done; ')
+    #out.write('p+=("-${a:$i:1}"); ') # no, this would also catch -V100 but 100 is a value for -V
+    out.write('case "${a:$i:1}" in')
+    w()
+    out.write('      ')
+    out.write('[' + short_bool_opt_chars + ']) ')
+    out.write('p+=("-${a:$i:1}"); continue;;')
+    w()
+    out.write('      ')
+    out.write('[' + short_string_opt_chars + ']) ')
+    # stop expanding args, use ${a:$i} as value for previous arg
+    out.write('p+=("-${a:$i:1}" "${a:$((i+1))}"); break;;')
+    w()
+    out.write('      ')
+    out.write('*) echo "error: failed to parse argument ${a@Q}" >&2; exit 1;;')
+    w()
+    out.write('    ')
+    out.write('esac; ')
+    out.write('done;')
+    w()
+    out.write('    ')
     out.write('s=("${p[@]}" "${s[@]}"); ') # unshift args to stack
     out.write('p=; ')
     out.write('continue;;')
@@ -240,25 +306,27 @@ def generate_argparse_bash(options):
 
     # all following args are positional args
     out.write('  --) ')
-    out.write('positional_args+=("${s[@]}"); ') # copy stack to positional_args
+    out.write('__+=("${s[@]}"); ') # copy stack to __
     out.write('s=; ') # clear stack
     out.write('break;;')
     w()
 
     # default case
-    w('  *) positional_args+=("$a");;')
+    w('  *) __+=("$a");;')
     w("esac; done")
 
     w()
     w("# print parsed values")
     w("if true; then")
-    opt_name = "positional_args"
+    opt_name = "__"
     out.write('  for i in "${!' + opt_name + '[@]}"; do ')
     out.write('v="${' + opt_name + '[$i]}"; ')
     out.write('echo "' + opt_name + ' $i: ${v@Q}"; ')
     out.write('done')
     w()
     for opts, var, desc, opt_name in loop_options(options):
+        if not use_opts(opts):
+            continue
         if var == None:
             # boolean argument
             w('  echo "' + opt_name + ': $' + opt_name + '"')
@@ -274,6 +342,16 @@ def generate_argparse_bash(options):
 
 
 def main(argv):
+    import argparse
+    parser = argparse.ArgumentParser(
+        prog='parse-helptext',
+    )
+    # todo: use subcommands: json, gen-argparse-sh, ...
+    parser.add_argument('--json', action='store_true')
+    parser.add_argument('--gen-argparse-sh', action='store_true')
+    parser.add_argument('--filter')
+    args = parser.parse_args(argv[1:])
+
     #if len(argv) > 1:
     if True:
         options = parse_options(sys.stdin.readlines())
@@ -281,16 +359,16 @@ def main(argv):
             print("error: failed to parse the help text from stdin")
             sys.exit(2)
 
-    if "--gen-argparse-sh" in argv:
+    if args.gen_argparse_sh:
         # generate argument parser in bash
         # see also https://github.com/matejak/argbash
-        print(generate_argparse_bash(options))
+        print(generate_argparse_bash(options, args))
         return
 
-    if True or "--json" in argv:
+    if True or args.json:
         import json
         print(json.dumps(options, indent=2))
-        sys.exit()
+        return
 
     if True:
         program_name = "some-program"

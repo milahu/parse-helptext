@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # set default values
-positional_args=()
+__=() # positional args
 __help=0 # Show help.
 __formats=0 # Show available AAC formats and exit
 __abr=() # AAC ABR mode / bitrate
@@ -161,14 +161,21 @@ while [ ${#s[@]} != 0 ]; do a="${s[0]}"; s=("${s[@]:1}"); case "$a" in
   --tag) v; __tag+=("$v"); continue;;
   --tag-from-file) v; __tag_from_file+=("$v"); continue;;
   --long-tag) v; __long_tag+=("$v"); continue;;
-  -[^-]*) p=(); for ((i=1;i<${#a};i++)); do p+=("-${a:$i:1}"); done; s=("${p[@]}" "${s[@]}"); p=; continue;;
-  --) positional_args+=("${s[@]}"); s=; break;;
-  *) positional_args+=("$a");;
+  -[^-]*)
+    p=()
+    for ((i=1;i<${#a};i++)); do case "${a:$i:1}" in
+      [ADNsinSR]) p+=("-${a:$i:1}"); continue;;
+      [aVvcqdrbo]) p+=("-${a:$i:1}" "${a:$((i+1))}"); break;;
+      *) echo "error: failed to parse argument ${a@Q}" >&2; exit 1;;
+    esac; done;
+    s=("${p[@]}" "${s[@]}"); p=; continue;;
+  --) __+=("${s[@]}"); s=; break;;
+  *) __+=("$a");;
 esac; done
 
 # print parsed values
 if true; then
-  for i in "${!positional_args[@]}"; do v="${positional_args[$i]}"; echo "positional_args $i: ${v@Q}"; done
+  for i in "${!__[@]}"; do v="${__[$i]}"; echo "__ $i: ${v@Q}"; done
   echo "__help: $__help"
   echo "__formats: $__formats"
   for i in "${!__abr[@]}"; do v="${__abr[$i]}"; echo "__abr $i: ${v@Q}"; done
