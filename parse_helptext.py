@@ -340,7 +340,7 @@ def generate_argparse_bash(options, args):
             continue
         if var == None:
             # void argument
-            w('  echo "' + opt_name + ': $' + opt_name + '"')
+            w('  [ "$' + opt_name +'" != 0 ] && echo "' + opt_name + ': $' + opt_name + '"')
         else:
             # string argument
             out.write('  for i in "${!' + opt_name + '[@]}"; do ')

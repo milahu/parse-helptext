@@ -161,51 +161,51 @@ if true; then
   echo "#A: ${#A[@]}"
   echo -n 'A:'; for a in "${A[@]}"; do echo -n " ${a@Q}"; done; echo
   for i in "${!__[@]}"; do v="${__[$i]}"; echo "__ $i: ${v@Q}"; done
-  echo "__help: $__help"
-  echo "__fast: $__fast"
+  [ "$__help" != 0 ] && echo "__help: $__help"
+  [ "$__fast" != 0 ] && echo "__fast: $__fast"
   for i in "${!_d[@]}"; do v="${_d[$i]}"; echo "_d $i: ${v@Q}"; done
-  echo "__check: $__check"
-  echo "__alac: $__alac"
-  echo "__decode: $__decode"
-  echo "__caf: $__caf"
-  echo "__play: $__play"
+  [ "$__check" != 0 ] && echo "__check: $__check"
+  [ "$__alac" != 0 ] && echo "__alac: $__alac"
+  [ "$__decode" != 0 ] && echo "__decode: $__decode"
+  [ "$__caf" != 0 ] && echo "__caf: $__caf"
+  [ "$__play" != 0 ] && echo "__play: $__play"
   for i in "${!__rate[@]}"; do v="${__rate[$i]}"; echo "__rate $i: ${v@Q}"; done
   for i in "${!__lowpass[@]}"; do v="${__lowpass[$i]}"; echo "__lowpass $i: ${v@Q}"; done
   for i in "${!__bits_per_sample[@]}"; do v="${__bits_per_sample[$i]}"; echo "__bits_per_sample $i: ${v@Q}"; done
-  echo "__no_dither: $__no_dither"
-  echo "__peak: $__peak"
+  [ "$__no_dither" != 0 ] && echo "__no_dither: $__no_dither"
+  [ "$__peak" != 0 ] && echo "__peak: $__peak"
   for i in "${!__gain[@]}"; do v="${__gain[$i]}"; echo "__gain $i: ${v@Q}"; done
-  echo "__normalize: $__normalize"
+  [ "$__normalize" != 0 ] && echo "__normalize: $__normalize"
   for i in "${!__drc[@]}"; do v="${__drc[$i]}"; echo "__drc $i: ${v@Q}"; done
-  echo "__limiter: $__limiter"
+  [ "$__limiter" != 0 ] && echo "__limiter: $__limiter"
   for i in "${!__start[@]}"; do v="${__start[$i]}"; echo "__start $i: ${v@Q}"; done
   for i in "${!__end[@]}"; do v="${__end[$i]}"; echo "__end $i: ${v@Q}"; done
   for i in "${!__delay[@]}"; do v="${__delay[$i]}"; echo "__delay $i: ${v@Q}"; done
-  echo "__no_delay: $__no_delay"
+  [ "$__no_delay" != 0 ] && echo "__no_delay: $__no_delay"
   for i in "${!__num_priming[@]}"; do v="${__num_priming[$i]}"; echo "__num_priming $i: ${v@Q}"; done
   for i in "${!__gapless_mode[@]}"; do v="${__gapless_mode[$i]}"; echo "__gapless_mode $i: ${v@Q}"; done
   for i in "${!__matrix_preset[@]}"; do v="${__matrix_preset[$i]}"; echo "__matrix_preset $i: ${v@Q}"; done
   for i in "${!__matrix_file[@]}"; do v="${__matrix_file[$i]}"; echo "__matrix_file $i: ${v@Q}"; done
-  echo "__no_matrix_normalize: $__no_matrix_normalize"
+  [ "$__no_matrix_normalize" != 0 ] && echo "__no_matrix_normalize: $__no_matrix_normalize"
   for i in "${!__chanmap[@]}"; do v="${__chanmap[$i]}"; echo "__chanmap $i: ${v@Q}"; done
   for i in "${!__chanmask[@]}"; do v="${__chanmask[$i]}"; echo "__chanmask $i: ${v@Q}"; done
-  echo "__no_optimize: $__no_optimize"
+  [ "$__no_optimize" != 0 ] && echo "__no_optimize: $__no_optimize"
   for i in "${!__tmpdir[@]}"; do v="${__tmpdir[$i]}"; echo "__tmpdir $i: ${v@Q}"; done
-  echo "__silent: $__silent"
-  echo "__verbose: $__verbose"
-  echo "__ignorelength: $__ignorelength"
-  echo "__threading: $__threading"
-  echo "__nice: $__nice"
-  echo "__sort_args: $__sort_args"
+  [ "$__silent" != 0 ] && echo "__silent: $__silent"
+  [ "$__verbose" != 0 ] && echo "__verbose: $__verbose"
+  [ "$__ignorelength" != 0 ] && echo "__ignorelength: $__ignorelength"
+  [ "$__threading" != 0 ] && echo "__threading: $__threading"
+  [ "$__nice" != 0 ] && echo "__nice: $__nice"
+  [ "$__sort_args" != 0 ] && echo "__sort_args: $__sort_args"
   for i in "${!__text_codepage[@]}"; do v="${__text_codepage[$i]}"; echo "__text_codepage $i: ${v@Q}"; done
-  echo "__stat: $__stat"
+  [ "$__stat" != 0 ] && echo "__stat: $__stat"
   for i in "${!__log[@]}"; do v="${__log[$i]}"; echo "__log $i: ${v@Q}"; done
-  echo "__fname_from_tag: $__fname_from_tag"
+  [ "$__fname_from_tag" != 0 ] && echo "__fname_from_tag: $__fname_from_tag"
   for i in "${!__fname_format[@]}"; do v="${__fname_format[$i]}"; echo "__fname_format $i: ${v@Q}"; done
   for i in "${!_o[@]}"; do v="${_o[$i]}"; echo "_o $i: ${v@Q}"; done
-  echo "__concat: $__concat"
+  [ "$__concat" != 0 ] && echo "__concat: $__concat"
   for i in "${!__cue_tracks[@]}"; do v="${__cue_tracks[$i]}"; echo "__cue_tracks $i: ${v@Q}"; done
-  echo "__raw: $__raw"
+  [ "$__raw" != 0 ] && echo "__raw: $__raw"
   for i in "${!__raw_channels[@]}"; do v="${__raw_channels[$i]}"; echo "__raw_channels $i: ${v@Q}"; done
   for i in "${!__raw_rate[@]}"; do v="${__raw_rate[$i]}"; echo "__raw_rate $i: ${v@Q}"; done
   for i in "${!__raw_format[@]}"; do v="${__raw_format[$i]}"; echo "__raw_format $i: ${v@Q}"; done
@@ -224,7 +224,7 @@ if true; then
   for i in "${!__lyrics[@]}"; do v="${__lyrics[$i]}"; echo "__lyrics $i: ${v@Q}"; done
   for i in "${!__artwork[@]}"; do v="${__artwork[$i]}"; echo "__artwork $i: ${v@Q}"; done
   for i in "${!__artwork_size[@]}"; do v="${__artwork_size[$i]}"; echo "__artwork_size $i: ${v@Q}"; done
-  echo "__copy_artwork: $__copy_artwork"
+  [ "$__copy_artwork" != 0 ] && echo "__copy_artwork: $__copy_artwork"
   for i in "${!__chapter[@]}"; do v="${__chapter[$i]}"; echo "__chapter $i: ${v@Q}"; done
   for i in "${!__tag[@]}"; do v="${__tag[$i]}"; echo "__tag $i: ${v@Q}"; done
   for i in "${!__tag_from_file[@]}"; do v="${__tag_from_file[$i]}"; echo "__tag_from_file $i: ${v@Q}"; done
