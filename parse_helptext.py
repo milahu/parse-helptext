@@ -219,7 +219,7 @@ def generate_argparse_bash(options, args):
     w("# parse args")
 
     # get value from stack
-    out.write('v(){ ')
+    out.write('g(){ ')
     out.write('if [ -n "$s" ]; then ')
     out.write('v="${s[0]}"; s=("${s[@]:1}"); ') # shift value from stack
     #out.write('echo "${s[0]}"; s=("${s[@]:1}"); ') # shift value from stack # no. echo is lossy
@@ -247,7 +247,7 @@ def generate_argparse_bash(options, args):
             out.write(": $((" + opt_name + '++)); A+=("$a"); ') # set value: increase by 1
         else:
             # string argument
-            out.write('v; ')
+            out.write('g; ')
             out.write(opt_name + '+=("$v"); A+=("$a" "$v"); ') # set value
             #out.write(opt_name + '+=("$(v)"); ') # set value # no. echo is lossy
         out.write("continue;;")
@@ -270,7 +270,7 @@ def generate_argparse_bash(options, args):
             w("  " + "|".join(opts) + ') A+=("$a");;')
         if unused_string_opts:
             opts = unused_string_opts
-            w("  " + "|".join(opts) + ') v; A+=("$a" "$v");;')
+            w("  " + "|".join(opts) + ') g; A+=("$a" "$v");;')
 
     # TODO make this optional. not all programs support this
     # unshift args: expand concatenated short options
