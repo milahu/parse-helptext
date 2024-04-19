@@ -164,12 +164,10 @@ def loop_options(options):
         yield opts, var, desc, opt_name
 
 
-# TODO rename "bool" to "void"
-
 def generate_argparse_bash(options, args):
 
     short_opt_chars = ""
-    short_bool_opt_chars = ""
+    short_void_opt_chars = ""
     short_string_opt_chars = ""
     for opts, var, desc, opt_name in loop_options(options):
         for opt in opts:
@@ -180,7 +178,7 @@ def generate_argparse_bash(options, args):
             opt_char = opt[1]
             short_opt_chars += opt_char
             if var == None:
-                short_bool_opt_chars += opt_char
+                short_void_opt_chars += opt_char
             else:
                 short_string_opt_chars += opt_char
 
@@ -211,7 +209,7 @@ def generate_argparse_bash(options, args):
             continue
         comment = f" # {desc}" if desc else ""
         if var == None:
-            # boolean argument
+            # void argument
             w(opt_name + "=0" + comment) # set default value: 0. count number of args
         else:
             # string argument
@@ -244,7 +242,7 @@ def generate_argparse_bash(options, args):
         out.write("  " + "|".join(opts) + ") ")
         #                                   ^ here we can modify arguments later
         if var == None:
-            # boolean argument
+            # void argument
             #out.write(opt_name + "=true; ") # set value
             out.write(": $((" + opt_name + '++)); A+=("$a"); ') # set value: increase by 1
         else:
@@ -257,18 +255,18 @@ def generate_argparse_bash(options, args):
 
     if args.filter:
         # parse unused opts
-        unused_bool_opts = []
+        unused_void_opts = []
         unused_string_opts = []
         for opts, var, desc, opt_name in loop_options(options):
             if use_opts(opts):
                 continue
             if var == None:
-                unused_bool_opts += opts
+                unused_void_opts += opts
             else:
                 unused_string_opts += opts
         w("  # skip unused args")
-        if unused_bool_opts:
-            opts = unused_bool_opts
+        if unused_void_opts:
+            opts = unused_void_opts
             w("  " + "|".join(opts) + ') A+=("$a");;')
         if unused_string_opts:
             opts = unused_string_opts
@@ -286,7 +284,7 @@ def generate_argparse_bash(options, args):
     out.write('case "${a:$i:1}" in')
     w()
     out.write('      ')
-    out.write('[' + short_bool_opt_chars + ']) ')
+    out.write('[' + short_void_opt_chars + ']) ')
     out.write('p+=("-${a:$i:1}"); continue;;')
     w()
     out.write('      ')
@@ -340,7 +338,7 @@ def generate_argparse_bash(options, args):
         if not use_opts(opts):
             continue
         if var == None:
-            # boolean argument
+            # void argument
             w('  echo "' + opt_name + ': $' + opt_name + '"')
         else:
             # string argument
