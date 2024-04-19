@@ -83,84 +83,85 @@ __long_tag=() # Set long tag (iTunes custom metadata) with
 # parse args
 v(){ if [ -n "$s" ]; then v="${s[0]}"; s=("${s[@]:1}"); return; fi; echo "error: missing value for argument $a" >&2; exit 1; }
 s=("$@")
+A=()
 while [ ${#s[@]} != 0 ]; do a="${s[0]}"; s=("${s[@]:1}"); case "$a" in
-  -h|--help) : $((__help++)); continue;;
-  --formats) : $((__formats++)); continue;;
-  -a|--abr) v; __abr+=("$v"); continue;;
-  -V|--tvbr) v; __tvbr+=("$v"); continue;;
-  -v|--cvbr) v; __cvbr+=("$v"); continue;;
-  -c|--cbr) v; __cbr+=("$v"); continue;;
-  --he) : $((__he++)); continue;;
-  -q|--quality) v; __quality+=("$v"); continue;;
-  --adts) : $((__adts++)); continue;;
-  --no-smart-padding) : $((__no_smart_padding++)); continue;;
-  -d) v; _d+=("$v"); continue;;
-  --check) : $((__check++)); continue;;
-  -A|--alac) : $((__alac++)); continue;;
-  -D|--decode) : $((__decode++)); continue;;
-  --caf) : $((__caf++)); continue;;
-  --play) : $((__play++)); continue;;
-  -r|--rate) v; __rate+=("$v"); continue;;
-  --lowpass) v; __lowpass+=("$v"); continue;;
-  -b|--bits-per-sample) v; __bits_per_sample+=("$v"); continue;;
-  --no-dither) : $((__no_dither++)); continue;;
-  --peak) : $((__peak++)); continue;;
-  --gain) v; __gain+=("$v"); continue;;
-  -N|--normalize) : $((__normalize++)); continue;;
-  --drc) v; __drc+=("$v"); continue;;
-  --limiter) : $((__limiter++)); continue;;
-  --start) v; __start+=("$v"); continue;;
-  --end) v; __end+=("$v"); continue;;
-  --delay) v; __delay+=("$v"); continue;;
-  --no-delay) : $((__no_delay++)); continue;;
-  --num-priming) v; __num_priming+=("$v"); continue;;
-  --gapless-mode) v; __gapless_mode+=("$v"); continue;;
-  --matrix-preset) v; __matrix_preset+=("$v"); continue;;
-  --matrix-file) v; __matrix_file+=("$v"); continue;;
-  --no-matrix-normalize) : $((__no_matrix_normalize++)); continue;;
-  --chanmap) v; __chanmap+=("$v"); continue;;
-  --chanmask) v; __chanmask+=("$v"); continue;;
-  --no-optimize) : $((__no_optimize++)); continue;;
-  --tmpdir) v; __tmpdir+=("$v"); continue;;
-  -s|--silent) : $((__silent++)); continue;;
-  --verbose) : $((__verbose++)); continue;;
-  -i|--ignorelength) : $((__ignorelength++)); continue;;
-  --threading) : $((__threading++)); continue;;
-  -n|--nice) : $((__nice++)); continue;;
-  --sort-args) : $((__sort_args++)); continue;;
-  --text-codepage) v; __text_codepage+=("$v"); continue;;
-  -S|--stat) : $((__stat++)); continue;;
-  --log) v; __log+=("$v"); continue;;
-  --fname-from-tag) : $((__fname_from_tag++)); continue;;
-  --fname-format) v; __fname_format+=("$v"); continue;;
-  -o) v; _o+=("$v"); continue;;
-  --concat) : $((__concat++)); continue;;
-  --cue-tracks) v; __cue_tracks+=("$v"); continue;;
-  -R|--raw) : $((__raw++)); continue;;
-  --raw-channels) v; __raw_channels+=("$v"); continue;;
-  --raw-rate) v; __raw_rate+=("$v"); continue;;
-  --raw-format) v; __raw_format+=("$v"); continue;;
-  --native-resampler) v; __native_resampler+=("$v"); continue;;
-  --title) v; __title+=("$v"); continue;;
-  --artist) v; __artist+=("$v"); continue;;
-  --band) v; __band+=("$v"); continue;;
-  --album) v; __album+=("$v"); continue;;
-  --grouping) v; __grouping+=("$v"); continue;;
-  --composer) v; __composer+=("$v"); continue;;
-  --comment) v; __comment+=("$v"); continue;;
-  --genre) v; __genre+=("$v"); continue;;
-  --date) v; __date+=("$v"); continue;;
-  --track) v; __track+=("$v"); continue;;
-  --disk) v; __disk+=("$v"); continue;;
-  --compilation) v; __compilation+=("$v"); continue;;
-  --lyrics) v; __lyrics+=("$v"); continue;;
-  --artwork) v; __artwork+=("$v"); continue;;
-  --artwork-size) v; __artwork_size+=("$v"); continue;;
-  --copy-artwork) : $((__copy_artwork++)); continue;;
-  --chapter) v; __chapter+=("$v"); continue;;
-  --tag) v; __tag+=("$v"); continue;;
-  --tag-from-file) v; __tag_from_file+=("$v"); continue;;
-  --long-tag) v; __long_tag+=("$v"); continue;;
+  -h|--help) : $((__help++)); A+=("$a"); continue;;
+  --formats) : $((__formats++)); A+=("$a"); continue;;
+  -a|--abr) v; __abr+=("$v"); A+=("$a" "$v"); continue;;
+  -V|--tvbr) v; __tvbr+=("$v"); A+=("$a" "$v"); continue;;
+  -v|--cvbr) v; __cvbr+=("$v"); A+=("$a" "$v"); continue;;
+  -c|--cbr) v; __cbr+=("$v"); A+=("$a" "$v"); continue;;
+  --he) : $((__he++)); A+=("$a"); continue;;
+  -q|--quality) v; __quality+=("$v"); A+=("$a" "$v"); continue;;
+  --adts) : $((__adts++)); A+=("$a"); continue;;
+  --no-smart-padding) : $((__no_smart_padding++)); A+=("$a"); continue;;
+  -d) v; _d+=("$v"); A+=("$a" "$v"); continue;;
+  --check) : $((__check++)); A+=("$a"); continue;;
+  -A|--alac) : $((__alac++)); A+=("$a"); continue;;
+  -D|--decode) : $((__decode++)); A+=("$a"); continue;;
+  --caf) : $((__caf++)); A+=("$a"); continue;;
+  --play) : $((__play++)); A+=("$a"); continue;;
+  -r|--rate) v; __rate+=("$v"); A+=("$a" "$v"); continue;;
+  --lowpass) v; __lowpass+=("$v"); A+=("$a" "$v"); continue;;
+  -b|--bits-per-sample) v; __bits_per_sample+=("$v"); A+=("$a" "$v"); continue;;
+  --no-dither) : $((__no_dither++)); A+=("$a"); continue;;
+  --peak) : $((__peak++)); A+=("$a"); continue;;
+  --gain) v; __gain+=("$v"); A+=("$a" "$v"); continue;;
+  -N|--normalize) : $((__normalize++)); A+=("$a"); continue;;
+  --drc) v; __drc+=("$v"); A+=("$a" "$v"); continue;;
+  --limiter) : $((__limiter++)); A+=("$a"); continue;;
+  --start) v; __start+=("$v"); A+=("$a" "$v"); continue;;
+  --end) v; __end+=("$v"); A+=("$a" "$v"); continue;;
+  --delay) v; __delay+=("$v"); A+=("$a" "$v"); continue;;
+  --no-delay) : $((__no_delay++)); A+=("$a"); continue;;
+  --num-priming) v; __num_priming+=("$v"); A+=("$a" "$v"); continue;;
+  --gapless-mode) v; __gapless_mode+=("$v"); A+=("$a" "$v"); continue;;
+  --matrix-preset) v; __matrix_preset+=("$v"); A+=("$a" "$v"); continue;;
+  --matrix-file) v; __matrix_file+=("$v"); A+=("$a" "$v"); continue;;
+  --no-matrix-normalize) : $((__no_matrix_normalize++)); A+=("$a"); continue;;
+  --chanmap) v; __chanmap+=("$v"); A+=("$a" "$v"); continue;;
+  --chanmask) v; __chanmask+=("$v"); A+=("$a" "$v"); continue;;
+  --no-optimize) : $((__no_optimize++)); A+=("$a"); continue;;
+  --tmpdir) v; __tmpdir+=("$v"); A+=("$a" "$v"); continue;;
+  -s|--silent) : $((__silent++)); A+=("$a"); continue;;
+  --verbose) : $((__verbose++)); A+=("$a"); continue;;
+  -i|--ignorelength) : $((__ignorelength++)); A+=("$a"); continue;;
+  --threading) : $((__threading++)); A+=("$a"); continue;;
+  -n|--nice) : $((__nice++)); A+=("$a"); continue;;
+  --sort-args) : $((__sort_args++)); A+=("$a"); continue;;
+  --text-codepage) v; __text_codepage+=("$v"); A+=("$a" "$v"); continue;;
+  -S|--stat) : $((__stat++)); A+=("$a"); continue;;
+  --log) v; __log+=("$v"); A+=("$a" "$v"); continue;;
+  --fname-from-tag) : $((__fname_from_tag++)); A+=("$a"); continue;;
+  --fname-format) v; __fname_format+=("$v"); A+=("$a" "$v"); continue;;
+  -o) v; _o+=("$v"); A+=("$a" "$v"); continue;;
+  --concat) : $((__concat++)); A+=("$a"); continue;;
+  --cue-tracks) v; __cue_tracks+=("$v"); A+=("$a" "$v"); continue;;
+  -R|--raw) : $((__raw++)); A+=("$a"); continue;;
+  --raw-channels) v; __raw_channels+=("$v"); A+=("$a" "$v"); continue;;
+  --raw-rate) v; __raw_rate+=("$v"); A+=("$a" "$v"); continue;;
+  --raw-format) v; __raw_format+=("$v"); A+=("$a" "$v"); continue;;
+  --native-resampler) v; __native_resampler+=("$v"); A+=("$a" "$v"); continue;;
+  --title) v; __title+=("$v"); A+=("$a" "$v"); continue;;
+  --artist) v; __artist+=("$v"); A+=("$a" "$v"); continue;;
+  --band) v; __band+=("$v"); A+=("$a" "$v"); continue;;
+  --album) v; __album+=("$v"); A+=("$a" "$v"); continue;;
+  --grouping) v; __grouping+=("$v"); A+=("$a" "$v"); continue;;
+  --composer) v; __composer+=("$v"); A+=("$a" "$v"); continue;;
+  --comment) v; __comment+=("$v"); A+=("$a" "$v"); continue;;
+  --genre) v; __genre+=("$v"); A+=("$a" "$v"); continue;;
+  --date) v; __date+=("$v"); A+=("$a" "$v"); continue;;
+  --track) v; __track+=("$v"); A+=("$a" "$v"); continue;;
+  --disk) v; __disk+=("$v"); A+=("$a" "$v"); continue;;
+  --compilation) v; __compilation+=("$v"); A+=("$a" "$v"); continue;;
+  --lyrics) v; __lyrics+=("$v"); A+=("$a" "$v"); continue;;
+  --artwork) v; __artwork+=("$v"); A+=("$a" "$v"); continue;;
+  --artwork-size) v; __artwork_size+=("$v"); A+=("$a" "$v"); continue;;
+  --copy-artwork) : $((__copy_artwork++)); A+=("$a"); continue;;
+  --chapter) v; __chapter+=("$v"); A+=("$a" "$v"); continue;;
+  --tag) v; __tag+=("$v"); A+=("$a" "$v"); continue;;
+  --tag-from-file) v; __tag_from_file+=("$v"); A+=("$a" "$v"); continue;;
+  --long-tag) v; __long_tag+=("$v"); A+=("$a" "$v"); continue;;
   -[^-]*)
     p=()
     for ((i=1;i<${#a};i++)); do case "${a:$i:1}" in
@@ -169,12 +170,13 @@ while [ ${#s[@]} != 0 ]; do a="${s[0]}"; s=("${s[@]:1}"); case "$a" in
       *) echo "error: failed to parse argument ${a@Q}" >&2; exit 1;;
     esac; done;
     s=("${p[@]}" "${s[@]}"); p=; continue;;
-  --) __+=("${s[@]}"); s=; break;;
-  *) __+=("$a");;
+  --) __+=("${s[@]}"); A+=("${s[@]}"); s=; break;;
+  *) __+=("$a"); A+=("$a");;
 esac; done
 
 # print parsed values
 if true; then
+  echo -n 'A:'; for a in "${A[@]}"; do echo -n " ${a@Q}"; done; echo
   for i in "${!__[@]}"; do v="${__[$i]}"; echo "__ $i: ${v@Q}"; done
   echo "__help: $__help"
   echo "__formats: $__formats"

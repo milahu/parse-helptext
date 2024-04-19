@@ -232,6 +232,7 @@ def generate_argparse_bash(options, args):
     w()
 
     w('s=("$@")') # stack
+    w('A=()') # output array of arguments. this allows to modify arguments and preserve their position
     out.write('while [ ${#s[@]} != 0 ]; do ')
     out.write('a="${s[0]}"; s=("${s[@]:1}"); ') # shift arg from stack
     out.write('case "$a" in')
@@ -241,14 +242,15 @@ def generate_argparse_bash(options, args):
             # dont set values for unused opts
             continue
         out.write("  " + "|".join(opts) + ") ")
+        #                                   ^ here we can modify arguments later
         if var == None:
             # boolean argument
             #out.write(opt_name + "=true; ") # set value
-            out.write(": $((" + opt_name + "++)); ") # set value: increase by 1
+            out.write(": $((" + opt_name + '++)); A+=("$a"); ') # set value: increase by 1
         else:
             # string argument
             out.write('v; ')
-            out.write(opt_name + '+=("$v"); ') # set value
+            out.write(opt_name + '+=("$v"); A+=("$a" "$v"); ') # set value
             #out.write(opt_name + '+=("$(v)"); ') # set value # no. echo is lossy
         out.write("continue;;")
         w()
@@ -267,11 +269,12 @@ def generate_argparse_bash(options, args):
         w("  # skip unused args")
         if unused_bool_opts:
             opts = unused_bool_opts
-            w("  " + "|".join(opts) + ") :;;")
+            w("  " + "|".join(opts) + ') A+=("$a");;')
         if unused_string_opts:
             opts = unused_string_opts
-            w("  " + "|".join(opts) + ') s=("${s[@]:1}");;')
+            w("  " + "|".join(opts) + ') v; A+=("$a" "$v");;')
 
+    # TODO make this optional. not all programs support this
     # unshift args: expand concatenated short options
     # example: -vvv -> -v -v -v
     w('  -[^-]*)')
@@ -306,24 +309,33 @@ def generate_argparse_bash(options, args):
 
     # all following args are positional args
     out.write('  --) ')
-    out.write('__+=("${s[@]}"); ') # copy stack to __
+    out.write('__+=("${s[@]}"); A+=("${s[@]}"); ') # copy stack to __
     out.write('s=; ') # clear stack
     out.write('break;;')
     w()
 
     # default case
-    w('  *) __+=("$a");;')
+    w('  *) __+=("$a"); A+=("$a");;')
     w("esac; done")
 
     w()
     w("# print parsed values")
     w("if true; then")
+    # output array of arguments
+    out.write('  ')
+    out.write("echo -n 'A:'; ")
+    out.write('for a in "${A[@]}"; do echo -n " ${a@Q}"; done; ')
+    out.write("echo")
+    w()
+    # positional args
     opt_name = "__"
-    out.write('  for i in "${!' + opt_name + '[@]}"; do ')
+    out.write('  ')
+    out.write('for i in "${!' + opt_name + '[@]}"; do ')
     out.write('v="${' + opt_name + '[$i]}"; ')
     out.write('echo "' + opt_name + ' $i: ${v@Q}"; ')
     out.write('done')
     w()
+    # named args
     for opts, var, desc, opt_name in loop_options(options):
         if not use_opts(opts):
             continue
@@ -338,6 +350,7 @@ def generate_argparse_bash(options, args):
             out.write('done')
             w()
     w("fi")
+
     return out.getvalue()
 
 
