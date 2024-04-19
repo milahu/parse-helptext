@@ -320,6 +320,7 @@ def generate_argparse_bash(options, args):
     w("# print parsed values")
     w("if true; then")
     # output array of arguments
+    w('  echo "#A: ${#A[@]}"')
     out.write('  ')
     out.write("echo -n 'A:'; ")
     out.write('for a in "${A[@]}"; do echo -n " ${a@Q}"; done; ')

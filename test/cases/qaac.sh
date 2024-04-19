@@ -176,6 +176,7 @@ esac; done
 
 # print parsed values
 if true; then
+  echo "#A: ${#A[@]}"
   echo -n 'A:'; for a in "${A[@]}"; do echo -n " ${a@Q}"; done; echo
   for i in "${!__[@]}"; do v="${__[$i]}"; echo "__ $i: ${v@Q}"; done
   echo "__help: $__help"
