@@ -165,6 +165,7 @@ def loop_options(options):
 
 
 def generate_argparse_bash(options):
+
     # add missing help option
     has_help = False
     for opts, var, desc, opt_name in loop_options(options):
@@ -182,51 +183,68 @@ def generate_argparse_bash(options):
     w("# set default values")
     w("positional_args=()")
     for opts, var, desc, opt_name in loop_options(options):
+        comment = f" # {desc}" if desc else ""
         if var == None:
             # boolean argument
-            w(opt_name + "=false # " + desc) # set default value: false
+            w(opt_name + "=0" + comment) # set default value: 0. count number of args
         else:
             # string argument
-            w(opt_name + '=() # ' + desc) # set default value: empty array
+            w(opt_name + '=()' + comment) # set default value: empty array
 
     w()
     w("# parse args")
-    '''
-    # verbose style
-    w("for ((i=1;i<=$#;i++)); do")
-    w('  a="${!i}"')
-    w('  # echo "arg $i: ${a@}" # debug')
-    w('  case "$a" in')
-    for opts, var, desc, opt_name in loop_options(options):
-        w("    " + "|".join(opts) + ")")
-        if var == None:
-            # boolean argument
-            w("      " + opt_name + "=true") # set value
-        else:
-            # string argument
-            w("      : $((i++))")
-            w("      " + opt_name + '+=("${!i}")') # set value
-        w("      continue")
-        w("    ;;")
-    w("    *)")
-    w('      positional_args+=("$a")')
-    w("    ;;")
-    w("  esac")
-    w("done")
-    '''
-    # compact style
-    #w('  # echo "arg $i: ${a@}" # debug')
-    w('for ((i=1;i<=$#;i++)); do a="${!i}"; case "$a" in')
+
+    # get value from stack
+    out.write('v(){ ')
+    out.write('if [ -n "$s" ]; then ')
+    out.write('v="${s[0]}"; s=("${s[@]:1}"); ') # shift value from stack
+    #out.write('echo "${s[0]}"; s=("${s[@]:1}"); ') # shift value from stack # no. echo is lossy
+    out.write('return; ')
+    out.write('fi; ')
+    out.write('echo "error: missing value for argument $a" >&2; exit 1; ')
+    out.write('}')
+    w()
+
+    w('s=("$@")') # stack
+    out.write('while [ ${#s[@]} != 0 ]; do ')
+    out.write('a="${s[0]}"; s=("${s[@]:1}"); ') # shift arg from stack
+    out.write('case "$a" in')
+    w()
     for opts, var, desc, opt_name in loop_options(options):
         out.write("  " + "|".join(opts) + ") ")
         if var == None:
             # boolean argument
-            out.write(opt_name + "=true; ") # set value
+            #out.write(opt_name + "=true; ") # set value
+            out.write(": $((" + opt_name + "++)); ") # set value: increase by 1
         else:
             # string argument
-            out.write(": $((i++)); ")
-            out.write(opt_name + '+=("${!i}"); ') # set value
-        out.write("continue;;\n")
+            out.write('v; ')
+            out.write(opt_name + '+=("$v"); ') # set value
+            #out.write(opt_name + '+=("$(v)"); ') # set value # no. echo is lossy
+        out.write("continue;;")
+        w()
+
+    # unshift args: expand concatenated short options
+    # example: -vvv -> -v -v -v
+    out.write('  ')
+    out.write('-[^-]*) ')
+    out.write('p=(); ') # pre_stack
+    out.write('for ((i=1;i<${#a};i++)); do ')
+    # arg2="${a:$i:1}"; echo "unshifting ${arg2@Q}"
+    out.write('p+=("-${a:$i:1}"); ')
+    out.write('done; ')
+    out.write('s=("${p[@]}" "${s[@]}"); ') # unshift args to stack
+    out.write('p=; ')
+    out.write('continue;;')
+    w()
+
+    # all following args are positional args
+    out.write('  --) ')
+    out.write('positional_args+=("${s[@]}"); ') # copy stack to positional_args
+    out.write('s=; ') # clear stack
+    out.write('break;;')
+    w()
+
     # default case
     w('  *) positional_args+=("$a");;')
     w("esac; done")
@@ -235,28 +253,11 @@ def generate_argparse_bash(options):
     w("# print parsed values")
     w("if true; then")
     opt_name = "positional_args"
-    '''
-    # verbose style
-    w('  for i in "${!' + opt_name + '[@]}"; do')
-    w('    v="${' + opt_name + '[$i]}"')
-    w('    echo "' + opt_name + ' $i: ${v@Q}"')
-    w('  done')
-    for opts, var, desc, opt_name in loop_options(options):
-        if var == None:
-            # boolean argument
-            w('  echo "' + opt_name + ': $' + opt_name + '"')
-        else:
-            # string argument
-            w('  for i in "${!' + opt_name + '[@]}"; do')
-            w('    v="${' + opt_name + '[$i]}"')
-            w('    echo "' + opt_name + ' $i: ${v@Q}"')
-            w('  done')
-    '''
-    # compact style
     out.write('  for i in "${!' + opt_name + '[@]}"; do ')
     out.write('v="${' + opt_name + '[$i]}"; ')
     out.write('echo "' + opt_name + ' $i: ${v@Q}"; ')
-    out.write('done\n')
+    out.write('done')
+    w()
     for opts, var, desc, opt_name in loop_options(options):
         if var == None:
             # boolean argument
@@ -266,7 +267,8 @@ def generate_argparse_bash(options):
             out.write('  for i in "${!' + opt_name + '[@]}"; do ')
             out.write('v="${' + opt_name + '[$i]}"; ')
             out.write('echo "' + opt_name + ' $i: ${v@Q}"; ')
-            out.write('done\n')
+            out.write('done')
+            w()
     w("fi")
     return out.getvalue()
 

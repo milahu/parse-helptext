@@ -2,163 +2,167 @@
 
 # set default values
 positional_args=()
-__help=false # Show help.
-__formats=false # Show available AAC formats and exit
+__help=0 # Show help.
+__formats=0 # Show available AAC formats and exit
 __abr=() # AAC ABR mode / bitrate
 __tvbr=() # AAC True VBR mode / quality [0-127]
 __cvbr=() # AAC Constrained VBR mode / bitrate
 __cbr=() # AAC CBR mode / bitrate
-__he=false # HE AAC mode (TVBR is not available)
+__he=0 # HE AAC mode (TVBR is not available)
 __quality=() # AAC encoding Quality [0-2]
-__adts=false # ADTS output (AAC only)
-__no_smart_padding=false # Don't apply smart padding for gapless playback.
+__adts=0 # ADTS output (AAC only)
+__no_smart_padding=0 # Don't apply smart padding for gapless playback.
 _d=() # Output directory. Default is current working dir.
-__check=false # Show library versions and exit.
-__alac=false # ALAC encoding mode
-__decode=false # Decode to a WAV file.
-__caf=false # Output to CAF file instead of M4A/WAV/AAC.
-__play=false # Decode to a WaveOut device (playback).
+__check=0 # Show library versions and exit.
+__alac=0 # ALAC encoding mode
+__decode=0 # Decode to a WAV file.
+__caf=0 # Output to CAF file instead of M4A/WAV/AAC.
+__play=0 # Decode to a WaveOut device (playback).
 __rate=() # keep: output sampling rate will be same as input
 __lowpass=() # Specify lowpass filter cut-off frequency in Hz.
 __bits_per_sample=() # Bits per sample of output (for WAV/ALAC only)
-__no_dither=false # Turn off dither when quantizing to lower bit depth.
-__peak=false # Scan + print peak (don't generate output file).
+__no_dither=0 # Turn off dither when quantizing to lower bit depth.
+__peak=0 # Scan + print peak (don't generate output file).
 __gain=() # Adjust gain by f dB.
-__normalize=false # Normalize (works in two pass. can generate HUGE
+__normalize=0 # Normalize (works in two pass. can generate HUGE
 __drc=() # Dynamic range compression.
-__limiter=false # Apply smart limiter that softly clips portions
+__limiter=0 # Apply smart limiter that softly clips portions
 __start=() # Specify start point of the input.
 __end=() # Specify end point of the input (exclusive).
 __delay=() # Same as --start, with the sign reversed.
-__no_delay=false # Compensate encoder delay by prepending 960 samples
+__no_delay=0 # Compensate encoder delay by prepending 960 samples
 __num_priming=() # (Experimental). Set arbitrary number of priming
 __gapless_mode=() # Encoder delay signaling for gapless playback.
 __matrix_preset=() # Specify user defined preset for matrix mixer.
 __matrix_file=() # Matrix file for remix.
-__no_matrix_normalize=false # Don't automatically normalize(scale) matrix
+__no_matrix_normalize=0 # Don't automatically normalize(scale) matrix
 __chanmap=() # Rearrange input channels to the specified order.
 __chanmask=() # Force input channel mask(bitmap).
-__no_optimize=false # Don't optimize MP4 container after encoding.
+__no_optimize=0 # Don't optimize MP4 container after encoding.
 __tmpdir=() # Specify temporary directory. Default is %TMP%
-__silent=false # Suppress console messages.
-__verbose=false # More verbose console messages.
-__ignorelength=false # Assume WAV input and ignore the data chunk length.
-__threading=false # Enable multi-threading.
-__nice=false # Give lower process priority.
-__sort_args=false # Sort filenames given by command line arguments.
+__silent=0 # Suppress console messages.
+__verbose=0 # More verbose console messages.
+__ignorelength=0 # Assume WAV input and ignore the data chunk length.
+__threading=0 # Enable multi-threading.
+__nice=0 # Give lower process priority.
+__sort_args=0 # Sort filenames given by command line arguments.
 __text_codepage=() # Specify text code page of cuesheet/chapter/lyrics.
-__stat=false # Save bitrate statistics into file.
+__stat=0 # Save bitrate statistics into file.
 __log=() # Output message to file.
-__fname_from_tag=false # Generate filename based on metadata of input.
+__fname_from_tag=0 # Generate filename based on metadata of input.
 __fname_format=() # Format string for output filename.
 _o=() # Specify output filename
-__concat=false # Encodes whole inputs into a single file.
+__concat=0 # Encodes whole inputs into a single file.
 __cue_tracks=() # Limit extraction to specified tracks.
-__raw=false # Raw PCM input.
+__raw=0 # Raw PCM input.
 __raw_channels=() # Number of channels, default 2.
 __raw_rate=() # Sample rate, default 44100.
 __raw_format=() # Sample format, default S16L.
 __native_resampler=() # Arguments followed by '=' are optional.
-__title=() # 
-__artist=() # 
+__title=()
+__artist=()
 __band=() # This means "Album Artist".
-__album=() # 
-__grouping=() # 
-__composer=() # 
-__comment=() # 
-__genre=() # 
-__date=() # 
-__track=() # 
-__disk=() # 
+__album=()
+__grouping=()
+__composer=()
+__comment=()
+__genre=()
+__date=()
+__track=()
+__disk=()
 __compilation=() # By default, iTunes compilation flag is not set.
-__lyrics=() # 
-__artwork=() # 
+__lyrics=()
+__artwork=()
 __artwork_size=() # Specify maximum width or height of artwork in pixels.
-__copy_artwork=false # Copy front cover art(APIC:type 3) from the source.
+__copy_artwork=0 # Copy front cover art(APIC:type 3) from the source.
 __chapter=() # Set chapter from file.
 __tag=() # Set iTunes pre-defined tag with fourcc key
 __tag_from_file=() # Same as above, but value is read from file.
 __long_tag=() # Set long tag (iTunes custom metadata) with
 
 # parse args
-for ((i=1;i<=$#;i++)); do a="${!i}"; case "$a" in
-  -h|--help) __help=true; continue;;
-  --formats) __formats=true; continue;;
-  -a|--abr) : $((i++)); __abr+=("${!i}"); continue;;
-  -V|--tvbr) : $((i++)); __tvbr+=("${!i}"); continue;;
-  -v|--cvbr) : $((i++)); __cvbr+=("${!i}"); continue;;
-  -c|--cbr) : $((i++)); __cbr+=("${!i}"); continue;;
-  --he) __he=true; continue;;
-  -q|--quality) : $((i++)); __quality+=("${!i}"); continue;;
-  --adts) __adts=true; continue;;
-  --no-smart-padding) __no_smart_padding=true; continue;;
-  -d) : $((i++)); _d+=("${!i}"); continue;;
-  --check) __check=true; continue;;
-  -A|--alac) __alac=true; continue;;
-  -D|--decode) __decode=true; continue;;
-  --caf) __caf=true; continue;;
-  --play) __play=true; continue;;
-  -r|--rate) : $((i++)); __rate+=("${!i}"); continue;;
-  --lowpass) : $((i++)); __lowpass+=("${!i}"); continue;;
-  -b|--bits-per-sample) : $((i++)); __bits_per_sample+=("${!i}"); continue;;
-  --no-dither) __no_dither=true; continue;;
-  --peak) __peak=true; continue;;
-  --gain) : $((i++)); __gain+=("${!i}"); continue;;
-  -N|--normalize) __normalize=true; continue;;
-  --drc) : $((i++)); __drc+=("${!i}"); continue;;
-  --limiter) __limiter=true; continue;;
-  --start) : $((i++)); __start+=("${!i}"); continue;;
-  --end) : $((i++)); __end+=("${!i}"); continue;;
-  --delay) : $((i++)); __delay+=("${!i}"); continue;;
-  --no-delay) __no_delay=true; continue;;
-  --num-priming) : $((i++)); __num_priming+=("${!i}"); continue;;
-  --gapless-mode) : $((i++)); __gapless_mode+=("${!i}"); continue;;
-  --matrix-preset) : $((i++)); __matrix_preset+=("${!i}"); continue;;
-  --matrix-file) : $((i++)); __matrix_file+=("${!i}"); continue;;
-  --no-matrix-normalize) __no_matrix_normalize=true; continue;;
-  --chanmap) : $((i++)); __chanmap+=("${!i}"); continue;;
-  --chanmask) : $((i++)); __chanmask+=("${!i}"); continue;;
-  --no-optimize) __no_optimize=true; continue;;
-  --tmpdir) : $((i++)); __tmpdir+=("${!i}"); continue;;
-  -s|--silent) __silent=true; continue;;
-  --verbose) __verbose=true; continue;;
-  -i|--ignorelength) __ignorelength=true; continue;;
-  --threading) __threading=true; continue;;
-  -n|--nice) __nice=true; continue;;
-  --sort-args) __sort_args=true; continue;;
-  --text-codepage) : $((i++)); __text_codepage+=("${!i}"); continue;;
-  -S|--stat) __stat=true; continue;;
-  --log) : $((i++)); __log+=("${!i}"); continue;;
-  --fname-from-tag) __fname_from_tag=true; continue;;
-  --fname-format) : $((i++)); __fname_format+=("${!i}"); continue;;
-  -o) : $((i++)); _o+=("${!i}"); continue;;
-  --concat) __concat=true; continue;;
-  --cue-tracks) : $((i++)); __cue_tracks+=("${!i}"); continue;;
-  -R|--raw) __raw=true; continue;;
-  --raw-channels) : $((i++)); __raw_channels+=("${!i}"); continue;;
-  --raw-rate) : $((i++)); __raw_rate+=("${!i}"); continue;;
-  --raw-format) : $((i++)); __raw_format+=("${!i}"); continue;;
-  --native-resampler) : $((i++)); __native_resampler+=("${!i}"); continue;;
-  --title) : $((i++)); __title+=("${!i}"); continue;;
-  --artist) : $((i++)); __artist+=("${!i}"); continue;;
-  --band) : $((i++)); __band+=("${!i}"); continue;;
-  --album) : $((i++)); __album+=("${!i}"); continue;;
-  --grouping) : $((i++)); __grouping+=("${!i}"); continue;;
-  --composer) : $((i++)); __composer+=("${!i}"); continue;;
-  --comment) : $((i++)); __comment+=("${!i}"); continue;;
-  --genre) : $((i++)); __genre+=("${!i}"); continue;;
-  --date) : $((i++)); __date+=("${!i}"); continue;;
-  --track) : $((i++)); __track+=("${!i}"); continue;;
-  --disk) : $((i++)); __disk+=("${!i}"); continue;;
-  --compilation) : $((i++)); __compilation+=("${!i}"); continue;;
-  --lyrics) : $((i++)); __lyrics+=("${!i}"); continue;;
-  --artwork) : $((i++)); __artwork+=("${!i}"); continue;;
-  --artwork-size) : $((i++)); __artwork_size+=("${!i}"); continue;;
-  --copy-artwork) __copy_artwork=true; continue;;
-  --chapter) : $((i++)); __chapter+=("${!i}"); continue;;
-  --tag) : $((i++)); __tag+=("${!i}"); continue;;
-  --tag-from-file) : $((i++)); __tag_from_file+=("${!i}"); continue;;
-  --long-tag) : $((i++)); __long_tag+=("${!i}"); continue;;
+v(){ if [ -n "$s" ]; then v="${s[0]}"; s=("${s[@]:1}"); return; fi; echo "error: missing value for argument $a" >&2; exit 1; }
+s=("$@")
+while [ ${#s[@]} != 0 ]; do a="${s[0]}"; s=("${s[@]:1}"); case "$a" in
+  -h|--help) : $((__help++)); continue;;
+  --formats) : $((__formats++)); continue;;
+  -a|--abr) v; __abr+=("$v"); continue;;
+  -V|--tvbr) v; __tvbr+=("$v"); continue;;
+  -v|--cvbr) v; __cvbr+=("$v"); continue;;
+  -c|--cbr) v; __cbr+=("$v"); continue;;
+  --he) : $((__he++)); continue;;
+  -q|--quality) v; __quality+=("$v"); continue;;
+  --adts) : $((__adts++)); continue;;
+  --no-smart-padding) : $((__no_smart_padding++)); continue;;
+  -d) v; _d+=("$v"); continue;;
+  --check) : $((__check++)); continue;;
+  -A|--alac) : $((__alac++)); continue;;
+  -D|--decode) : $((__decode++)); continue;;
+  --caf) : $((__caf++)); continue;;
+  --play) : $((__play++)); continue;;
+  -r|--rate) v; __rate+=("$v"); continue;;
+  --lowpass) v; __lowpass+=("$v"); continue;;
+  -b|--bits-per-sample) v; __bits_per_sample+=("$v"); continue;;
+  --no-dither) : $((__no_dither++)); continue;;
+  --peak) : $((__peak++)); continue;;
+  --gain) v; __gain+=("$v"); continue;;
+  -N|--normalize) : $((__normalize++)); continue;;
+  --drc) v; __drc+=("$v"); continue;;
+  --limiter) : $((__limiter++)); continue;;
+  --start) v; __start+=("$v"); continue;;
+  --end) v; __end+=("$v"); continue;;
+  --delay) v; __delay+=("$v"); continue;;
+  --no-delay) : $((__no_delay++)); continue;;
+  --num-priming) v; __num_priming+=("$v"); continue;;
+  --gapless-mode) v; __gapless_mode+=("$v"); continue;;
+  --matrix-preset) v; __matrix_preset+=("$v"); continue;;
+  --matrix-file) v; __matrix_file+=("$v"); continue;;
+  --no-matrix-normalize) : $((__no_matrix_normalize++)); continue;;
+  --chanmap) v; __chanmap+=("$v"); continue;;
+  --chanmask) v; __chanmask+=("$v"); continue;;
+  --no-optimize) : $((__no_optimize++)); continue;;
+  --tmpdir) v; __tmpdir+=("$v"); continue;;
+  -s|--silent) : $((__silent++)); continue;;
+  --verbose) : $((__verbose++)); continue;;
+  -i|--ignorelength) : $((__ignorelength++)); continue;;
+  --threading) : $((__threading++)); continue;;
+  -n|--nice) : $((__nice++)); continue;;
+  --sort-args) : $((__sort_args++)); continue;;
+  --text-codepage) v; __text_codepage+=("$v"); continue;;
+  -S|--stat) : $((__stat++)); continue;;
+  --log) v; __log+=("$v"); continue;;
+  --fname-from-tag) : $((__fname_from_tag++)); continue;;
+  --fname-format) v; __fname_format+=("$v"); continue;;
+  -o) v; _o+=("$v"); continue;;
+  --concat) : $((__concat++)); continue;;
+  --cue-tracks) v; __cue_tracks+=("$v"); continue;;
+  -R|--raw) : $((__raw++)); continue;;
+  --raw-channels) v; __raw_channels+=("$v"); continue;;
+  --raw-rate) v; __raw_rate+=("$v"); continue;;
+  --raw-format) v; __raw_format+=("$v"); continue;;
+  --native-resampler) v; __native_resampler+=("$v"); continue;;
+  --title) v; __title+=("$v"); continue;;
+  --artist) v; __artist+=("$v"); continue;;
+  --band) v; __band+=("$v"); continue;;
+  --album) v; __album+=("$v"); continue;;
+  --grouping) v; __grouping+=("$v"); continue;;
+  --composer) v; __composer+=("$v"); continue;;
+  --comment) v; __comment+=("$v"); continue;;
+  --genre) v; __genre+=("$v"); continue;;
+  --date) v; __date+=("$v"); continue;;
+  --track) v; __track+=("$v"); continue;;
+  --disk) v; __disk+=("$v"); continue;;
+  --compilation) v; __compilation+=("$v"); continue;;
+  --lyrics) v; __lyrics+=("$v"); continue;;
+  --artwork) v; __artwork+=("$v"); continue;;
+  --artwork-size) v; __artwork_size+=("$v"); continue;;
+  --copy-artwork) : $((__copy_artwork++)); continue;;
+  --chapter) v; __chapter+=("$v"); continue;;
+  --tag) v; __tag+=("$v"); continue;;
+  --tag-from-file) v; __tag_from_file+=("$v"); continue;;
+  --long-tag) v; __long_tag+=("$v"); continue;;
+  -[^-]*) p=(); for ((i=1;i<${#a};i++)); do p+=("-${a:$i:1}"); done; s=("${p[@]}" "${s[@]}"); p=; continue;;
+  --) positional_args+=("${s[@]}"); s=; break;;
   *) positional_args+=("$a");;
 esac; done
 
