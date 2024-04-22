@@ -5,7 +5,13 @@ parse getopt-style help texts from `someprogram --help`
 return one of
 
 - json
-- argument parser for bash
+- argument parser for bash.
+  useful to write program wrappers in bash:
+  modify arguments,
+  run the program in a sandbox (bubblewrap),
+  run code before and after the program,
+  trap exit to handle program crashes,
+  ...
 
 
 
